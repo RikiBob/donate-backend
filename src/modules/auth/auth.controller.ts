@@ -9,12 +9,13 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { LoginUserDto } from './dtos/login-user.dto';
 import { LocalAuthGuard } from './guards/local.auth.guard';
 import { GoogleAuthGuard } from './guards/google.auth';
 import { ConfigService } from '@nestjs/config';
+import { CustomRequest } from './strategies/jwt.strategy';
 
 @Controller('auth')
 export class AuthController {
@@ -90,11 +91,10 @@ export class AuthController {
 
   @UseGuards(GoogleAuthGuard)
   @Get('google/redirect')
-  async googleRedirect(@Req() req, @Res() res: Response) {
+  async googleRedirect(@Req() req: CustomRequest, @Res() res: Response) {
     const { accessToken, refreshToken } = await this.authService.signIn(
       req.user,
     );
-    console.log(accessToken, refreshToken);
     res.cookie('access_token', accessToken, {
       httpOnly: true,
       maxAge: 60 * 30 * 1000,

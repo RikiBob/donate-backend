@@ -4,7 +4,8 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserEntity } from './entitties/user.entity';
 import { AuthModule } from './modules/auth/auth.module';
-import { config } from "rxjs";
+import { PostEntity } from './entitties/post.entity';
+import { PostModule } from './post/post.module';
 
 @Module({
   imports: [
@@ -18,17 +19,18 @@ import { config } from "rxjs";
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({
         type: 'postgres',
-        host: configService.get('DB_HOST'),
-        port: configService.get('DB_PORT'),
-        username: configService.get('DB_USER'),
-        password: configService.get('DB_PASSWORD'),
-        database: configService.get('DB_NAME'),
-        entities: [UserEntity],
-        synchronize: true,
-        // logging: true,
+        host: configService.get('TYPEORM_HOST'),
+        port: Number(configService.get('TYPEORM_PORT')),
+        username: 'postgres',
+        password: 'postgres',
+        database: configService.get('TYPEORM_DATABASE'),
+        logging: configService.get('TYPEORM_LOGGING'),
+        synchronize: false,
+        autoLoadEntities: true,
       }),
       inject: [ConfigService],
     }),
+    PostModule,
   ],
   controllers: [],
   providers: [],

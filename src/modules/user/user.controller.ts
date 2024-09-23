@@ -1,10 +1,18 @@
-import { Body, Controller, Get, Param, Put, Query, Req, UseGuards } from "@nestjs/common";
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Put,
+  Query,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { UserService } from './user.service';
-import { Request } from 'express';
 import { UserProfileDto } from './dtos/user-profile.dto';
 import { UpdateUserDto } from './dtos/update-user.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt.auth.guard';
-import { ReqUser } from '../auth/strategies/jwt.strategy';
+import { CustomRequest, ReqUser } from '../auth/strategies/jwt.strategy';
 
 @Controller('user')
 export class UserController {
@@ -18,7 +26,7 @@ export class UserController {
   @UseGuards(JwtAuthGuard)
   @Get('profile')
   async getById(
-    @Req() req,
+    @Req() req: CustomRequest,
     @Query('uuid') uuid?: string,
   ): Promise<UserProfileDto> {
     const userId = uuid ? uuid : (req.user as ReqUser).uuid;

@@ -4,17 +4,18 @@ import {
   CreateDateColumn,
   Entity,
   Generated,
-  PrimaryColumn,
+  OneToMany,
+  PrimaryColumn, PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { IsEnum } from 'class-validator';
 import { ROLES } from '../modules/user/enums/user.roles';
+import { PostEntity } from './post.entity';
 
 @Entity('users')
 export class UserEntity {
-  @PrimaryColumn()
-  @Generated('uuid')
+  @PrimaryGeneratedColumn('uuid')
   uuid: string;
 
   @Column({ nullable: true })
@@ -50,6 +51,9 @@ export class UserEntity {
 
   @UpdateDateColumn()
   updatedAt: Date;
+
+  @OneToMany(() => PostEntity, (post) => post.user)
+  posts: PostEntity[];
 
   @BeforeInsert()
   async hashPassword() {

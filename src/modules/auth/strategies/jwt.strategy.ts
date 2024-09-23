@@ -14,6 +14,10 @@ export type ReqUser = {
   uuid: string;
 };
 
+export interface CustomRequest extends Request {
+  user?: ReqUser;
+}
+
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
   constructor(
