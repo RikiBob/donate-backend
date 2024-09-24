@@ -24,8 +24,6 @@ export class AuthController {
     private readonly configService: ConfigService,
   ) {}
 
-  currentUser;
-
   @Post('user')
   async createUser(
     @Body() data: CreateUserDto,
@@ -58,7 +56,6 @@ export class AuthController {
     @Res() res: Response,
   ): Promise<Response> {
     const user = await this.authService.login(data.email, data.password);
-
     const { accessToken, refreshToken } = await this.authService.signIn(user);
 
     res.cookie('access_token', accessToken, {
@@ -109,8 +106,6 @@ export class AuthController {
       secure: false,
     });
 
-    this.currentUser = req.user;
-
-    return res.redirect(this.configService.get('REDIRECT_URL'));
+    res.redirect(this.configService.get('REDIRECT_URL'));
   }
 }

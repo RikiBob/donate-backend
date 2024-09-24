@@ -21,8 +21,7 @@
     "typeorm": "typeorm-ts-node-commonjs",
     "migrations:create": "npm run  build && npm run typeorm migration:create -- src/migrations/auto",
     "migrations:run": "npm run build && npm run typeorm migration:run -- -d src/typeorm.configs.ts",
-    "migrations:generate": "npm run build && npm run typeorm migration:generate -- -d src/typeorm.configs.ts src/migrations/auto",
-    "makemigrations": "npm run typeorm migration:generate -- -d src/typeorm.configs.ts src/migrations/auto"
+    "migrations:generate": "npm run build && npm run typeorm migration:generate -- -d src/typeorm.configs.ts src/migrations/auto"
   },
   "dependencies": {
     "@nestjs/cache-manager": "^2.2.2",

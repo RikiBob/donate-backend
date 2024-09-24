@@ -29,20 +29,14 @@ export class AuthService {
       throw new BadRequestException('This email is already in use');
     }
 
-    if (!user) {
+    if (user) {
+    } else {
       user = this.usersRepository.create({
         ...data,
-        password: data.password,
       });
       await this.usersRepository.save(user);
 
-      return (
-        await this.generateJwt({
-          sub: user.uuid,
-          email: user.email,
-        }),
-        user.uuid
-      );
+      return user.uuid;
     }
   }
 
@@ -69,7 +63,9 @@ export class AuthService {
     return tokenPair;
   }
 
-  async signIn(user): Promise<{ accessToken: string; refreshToken: string }> {
+  async signIn(
+    user: any,
+  ): Promise<{ accessToken: string; refreshToken: string }> {
     if (!user) {
       throw new BadRequestException('Unauthenticated');
     }
@@ -96,14 +92,9 @@ export class AuthService {
 
   async login(email: string, password: string): Promise<UserEntity> {
     const existingUser = await this.checkByEmail(email);
-
-    if (!existingUser) {
-      return null;
-    }
-
     const isPasswordValid = await existingUser.comparePassword(password);
-    if (!isPasswordValid) {
-      return null;
+    if (!existingUser || !isPasswordValid) {
+      throw new BadRequestException('Invalid email or password');
     }
 
     return existingUser;

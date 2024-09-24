@@ -29,10 +29,10 @@ export class PostEntity {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @Column({ type: 'uuid'})
+  @Column({ type: 'uuid' })
   user_id: string;
 
-  @ManyToOne(() => UserEntity, (user) => user.posts)
+  @ManyToOne(() => UserEntity, (user) => user.posts, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id' })
   user: UserEntity;
 }
