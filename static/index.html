@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create User Form</title>
+</head>
+<body>
+<h2>Create User</h2>
+<form action="http://127.0.0.1:3000/auth/user" method="POST">
+  <label for="password">Password:</label>
+  <input type="password" id="password" name="password" required><br><br>
+
+  <label for="repeatPassword">Repeat Password:</label>
+  <input type="password" id="repeatPassword" name="repeatPassword" required><br><br>
+
+  <input type="submit" value="Create User">
+</form>
+</body>
+</html>

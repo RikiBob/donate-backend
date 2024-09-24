@@ -42,9 +42,9 @@ export class PostController {
   @Put(':id')
   async updatePost(
     @Body() data: CreatePostDto,
-    @Param('id') idStr: string,
+    @Param('id') id: string,
   ): Promise<PostEntity> {
-    return await this.postService.updatePost(idStr, data);
+    return await this.postService.updatePost(id, data);
   }
   @UseGuards(JwtAuthGuard)
   @Delete(':id')

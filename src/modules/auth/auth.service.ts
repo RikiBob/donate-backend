@@ -1,4 +1,4 @@
-import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserEntity } from '../../entitties/user.entity';
@@ -66,13 +66,9 @@ export class AuthService {
   async signIn(
     user: any,
   ): Promise<{ accessToken: string; refreshToken: string }> {
-    if (!user) {
-      throw new BadRequestException('Unauthenticated');
-    }
-
     const userExists = await this.checkByEmail(user.email);
-    if (!userExists) {
-      return this.checkAndCreate(user);
+    if (!user || !userExists) {
+        throw new BadRequestException('Unauthenticated');
     }
 
     return this.generateJwt({

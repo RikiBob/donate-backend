@@ -6,11 +6,16 @@ import { UserEntity } from './entitties/user.entity';
 import { AuthModule } from './modules/auth/auth.module';
 import { PostEntity } from './entitties/post.entity';
 import { PostModule } from './modules/post/post.module';
+import { join } from 'path';
+import { ServeStaticModule } from '@nestjs/serve-static';
 
 @Module({
   imports: [
     AuthModule,
     UserModule,
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'static'),
+    }),
     ConfigModule.forRoot({
       envFilePath: '.env',
       isGlobal: true,

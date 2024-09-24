@@ -24,12 +24,18 @@ export class AuthController {
     private readonly configService: ConfigService,
   ) {}
 
+  currentUser = null;
+
   @Post('user')
   async createUser(
     @Body() data: CreateUserDto,
     @Res() res: Response,
   ): Promise<Response> {
-    const newUserId = await this.authService.checkAndCreateForUser(data);
+    const newUserId = await this.authService.checkAndCreateForUser({
+      ...(this.currentUser || {}),
+      ...data,
+    });
+
     const { accessToken, refreshToken } = await this.authService.signIn(data);
 
     res.cookie('access_token', accessToken, {
@@ -45,6 +51,8 @@ export class AuthController {
       sameSite: true,
       secure: false,
     });
+
+    this.currentUser = null;
 
     return res.send(newUserId);
   }
@@ -88,10 +96,17 @@ export class AuthController {
 
   @UseGuards(GoogleAuthGuard)
   @Get('google/redirect')
-  async googleRedirect(@Req() req: CustomRequest, @Res() res: Response) {
+  async googleRedirect(@Req() req, @Res() res: Response) {
+    const user = await this.authService.checkByEmail(req.user.email);
+    if (!user) {
+      this.currentUser = req.user;
+      return res.redirect(this.configService.get('REDIRECT_URL'));
+    }
+
     const { accessToken, refreshToken } = await this.authService.signIn(
       req.user,
     );
+
     res.cookie('access_token', accessToken, {
       httpOnly: true,
       maxAge: 60 * 30 * 1000,
@@ -106,6 +121,6 @@ export class AuthController {
       secure: false,
     });
 
-    res.redirect(this.configService.get('REDIRECT_URL'));
+    return res.send(user.uuid);
   }
 }
