@@ -8,6 +8,4 @@ export class CreateUserDto {
   password: string;
 
   repeatPassword: string;
-
-  role: string;
 }

@@ -1,7 +1,4 @@
 import { DataSource } from 'typeorm';
-// import { ConfigService } from '@nestjs/config';
-
-// const configService = new ConfigService();
 
 const AppDataSource = new DataSource({
   type: 'postgres',
@@ -15,15 +12,3 @@ const AppDataSource = new DataSource({
 });
 
 export default AppDataSource;
-// async function initializeDataSource() {
-//   try {
-//     await AppDataSource.initialize();
-//     console.log('Data Source has been initialized!');
-//   } catch (error) {
-//     console.error('Error during Data Source initialization:', error);
-//   }
-// }
-//
-// initializeDataSource();
-
-

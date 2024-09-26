@@ -3,14 +3,11 @@ import {
   Column,
   CreateDateColumn,
   Entity,
-  Generated,
   OneToMany,
-  PrimaryColumn, PrimaryGeneratedColumn,
+  PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import * as bcrypt from 'bcrypt';
-import { IsEnum } from 'class-validator';
-import { ROLES } from '../modules/user/enums/user.roles';
 import { PostEntity } from './post.entity';
 
 @Entity('users')
@@ -27,15 +24,11 @@ export class UserEntity {
   @Column()
   email: string;
 
-  @Column({ nullable: true })
+  @Column()
   password: string;
 
   @Column({ nullable: true })
   picture: string;
-
-  @Column({ nullable: true })
-  @IsEnum(ROLES)
-  role: string = ROLES.COMPANY || ROLES.DONOR;
 
   @Column({ nullable: true })
   birthday: Date;

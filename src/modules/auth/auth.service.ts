@@ -1,4 +1,4 @@
-import { BadRequestException, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserEntity } from '../../entitties/user.entity';
@@ -7,7 +7,6 @@ import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { JwtPayload } from './strategies/jwt.strategy';
-import { GoogleProfileDto } from './dtos/google-profile.dto';
 
 @Injectable()
 export class AuthService {
@@ -68,7 +67,7 @@ export class AuthService {
   ): Promise<{ accessToken: string; refreshToken: string }> {
     const userExists = await this.checkByEmail(user.email);
     if (!user || !userExists) {
-        throw new BadRequestException('Unauthenticated');
+      throw new BadRequestException('Unauthenticated');
     }
 
     return this.generateJwt({
@@ -102,20 +101,5 @@ export class AuthService {
 
   async findById(uuid: string): Promise<UserEntity> {
     return await this.usersRepository.findOneBy({ uuid });
-  }
-
-  async checkAndCreate(
-    data: GoogleProfileDto,
-  ): Promise<{ accessToken: string; refreshToken: string }> {
-    let user = await this.usersRepository.findOneBy({ email: data.email });
-
-    if (!user) {
-      user = await this.usersRepository.save(data);
-    }
-
-    return this.generateJwt({
-      sub: user.uuid,
-      email: user.email,
-    });
   }
 }

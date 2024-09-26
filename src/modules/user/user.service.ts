@@ -18,26 +18,15 @@ export class UserService {
 
   async getById(uuid: string): Promise<UserProfileDto> {
     const user = await this.usersRepository.findOneBy({ uuid });
-    return this.buildUserProfile(user);
+    delete user.password;
+    return user;
   }
 
   async updateUser(uuid: string, data: UpdateUserDto): Promise<UserProfileDto> {
     uuid = uuid.replace(/^:/, '');
     await this.usersRepository.update({ uuid }, data);
     const user = await this.usersRepository.findOneBy({ uuid });
-    return this.buildUserProfile(user);
-  }
-  buildUserProfile(user: UserEntity) {
-    return {
-      uuid: user.uuid,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      email: user.email,
-      picture: user.picture,
-      role: user.role,
-      birthday: user.birthday,
-      city: user.city,
-      country: user.country,
-    };
+    delete user.password;
+    return user;
   }
 }
