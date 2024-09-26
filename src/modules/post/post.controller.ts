@@ -33,7 +33,7 @@ export class PostController {
     return await this.postService.getPostById(id);
   }
 
-  @Get('/user/:id')
+  @Get('/all_posts/:user_id')
   async getAllPostsByUserId(@Param('id') id: string): Promise<PostEntity[]> {
     return await this.postService.getAllPostsByUserId(id);
   }
@@ -46,12 +46,13 @@ export class PostController {
   ): Promise<PostEntity> {
     return await this.postService.updatePost(id, data);
   }
+
   @UseGuards(JwtAuthGuard)
   @Delete(':id')
   async deletePost(
     @Param('id') id: string,
     @Req() req: CustomRequest,
   ): Promise<void> {
-    return await this.postService.deletePost(id, req.user.uuid);
+    await this.postService.deletePost(id, req.user.uuid);
   }
 }
