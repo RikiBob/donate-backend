@@ -25,31 +25,28 @@ export class PostService {
   }
 
   async getPostById(postId: string): Promise<PostEntity> {
-    const parseId = Number(postId.replace(/^:/, ''));
-    const post = await this.postsRepository.findOneBy({ id: parseId });
+    const post = await this.postsRepository.findOneBy({ id: +postId });
     if (!post) {
-      throw new NotFoundException(`Post with ID ${parseId} not found`);
+      throw new NotFoundException(`Post with ID ${postId} not found`);
     }
 
     return post;
   }
 
   async getAllPostsByUserId(userId: string): Promise<PostEntity[]> {
-    const parseId = userId.replace(/^:/, '');
-    const user = await this.postsRepository.findOneBy({ user_id: parseId });
+    const user = await this.postsRepository.findOneBy({ user_id: userId });
     if (!user) {
-      throw new NotFoundException(`User with ID ${parseId} not found`);
+      throw new NotFoundException(`User with ID ${userId} not found`);
     }
 
     return this.postsRepository.find({
-      where: { user_id: parseId },
+      where: { user_id: userId },
     });
   }
 
   async updatePost(postId: string, data: CreatePostDto): Promise<PostEntity> {
-    const parseId = Number(postId.replace(/^:/, ''));
-    await this.postsRepository.update({ id: parseId }, data);
-    return await this.postsRepository.findOneBy({ id: parseId });
+    await this.postsRepository.update({ id: +postId }, data);
+    return await this.postsRepository.findOneBy({ id: +postId });
   }
 
   async deletePost(postId: string, currentUserId: string): Promise<void> {
