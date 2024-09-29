@@ -6,6 +6,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { PostModule } from './modules/post/post.module';
 import { join } from 'path';
 import { ServeStaticModule } from '@nestjs/serve-static';
+import { WayforpayModule } from './modules/wayforpay/wayforpay.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { ServeStaticModule } from '@nestjs/serve-static';
       inject: [ConfigService],
     }),
     PostModule,
+    WayforpayModule,
   ],
   controllers: [],
   providers: [],
