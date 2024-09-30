@@ -34,7 +34,9 @@ export class PostController {
   }
 
   @Get('/all_posts/:user_id')
-  async getAllPostsByUserId(@Param('id') id: string): Promise<PostEntity[]> {
+  async getAllPostsByUserId(
+    @Param('user_id') id: string,
+  ): Promise<PostEntity[]> {
     return await this.postService.getAllPostsByUserId(id);
   }
 

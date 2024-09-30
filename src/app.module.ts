@@ -29,7 +29,7 @@ import { WayforpayModule } from './modules/wayforpay/wayforpay.module';
         password: 'postgres',
         database: configService.get('TYPEORM_DATABASE'),
         logging: configService.get('TYPEORM_LOGGING'),
-        synchronize: false,
+        synchronize: true,
         autoLoadEntities: true,
       }),
       inject: [ConfigService],

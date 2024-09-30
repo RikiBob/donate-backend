@@ -4,11 +4,13 @@ import {
   CreateDateColumn,
   Entity,
   OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { PostEntity } from './post.entity';
+import { WayforpayEntity } from './wayforpay.entity';
 
 @Entity('users')
 export class UserEntity {
@@ -47,6 +49,9 @@ export class UserEntity {
 
   @OneToMany(() => PostEntity, (post) => post.user)
   posts: PostEntity[];
+
+  @OneToOne(() => WayforpayEntity, (payInfo) => payInfo.user)
+  payInfo: WayforpayEntity;
 
   @BeforeInsert()
   async hashPassword() {

@@ -1,7 +1,20 @@
-import { Body, Controller, HttpStatus, Post, Res } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  HttpStatus,
+  Param,
+  Post,
+  Req,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
 import { WayforpayService } from './wayforpay.service';
 import { Response } from 'express';
 import { ConfigService } from '@nestjs/config';
+import { JwtAuthGuard } from '../auth/guards/jwt.auth.guard';
+import { SaveWayForPayDto } from './dtos/save-wayforpay.dto';
+import { CustomRequest } from '../auth/strategies/jwt.strategy';
 
 @Controller('wayforpay')
 export class WayforpayController {
@@ -34,5 +47,23 @@ export class WayforpayController {
   unsuccessfulPaymentRedirect(@Res() res: Response) {
     const url = this.configService.get('WAYFORPAY_DECLINED_REDIRECT_URL');
     res.redirect(url);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('/setting_up_details')
+  async saveWayforpayUser(
+    @Body() data: SaveWayForPayDto,
+    @Req() req: CustomRequest,
+  ): Promise<string> {
+    return await this.wayforpayService.saveWayforpayUser(data, req);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Delete(':user_id')
+  async deleteInfoPay(
+    @Param('user_id') userId: string,
+    @Req() req: CustomRequest,
+  ): Promise<void> {
+    await this.wayforpayService.deleteInfoPay(userId, req.user.uuid);
   }
 }

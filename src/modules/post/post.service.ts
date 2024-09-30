@@ -36,9 +36,8 @@ export class PostService {
   async getAllPostsByUserId(userId: string): Promise<PostEntity[]> {
     const user = await this.postsRepository.findOneBy({ user_id: userId });
     if (!user) {
-      throw new NotFoundException(`User with ID ${userId} not found`);
+      throw new NotFoundException(`User with ID ${userId} not found posts`);
     }
-
     return this.postsRepository.find({
       where: { user_id: userId },
     });

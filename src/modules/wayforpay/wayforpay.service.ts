@@ -1,8 +1,18 @@
-import { Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
 import { v4 as uuid } from 'uuid';
 import { createHmac } from 'node:crypto';
+import { SaveWayForPayDto } from './dtos/save-wayforpay.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { WayforpayEntity } from '../../entitties/wayforpay.entity';
+import { Repository } from 'typeorm';
+import { CustomRequest } from '../auth/strategies/jwt.strategy';
 
 @Injectable()
 export class WayforpayService {
@@ -12,7 +22,11 @@ export class WayforpayService {
   currency = 'UAH';
   productCount = '1';
 
-  constructor(private readonly configService: ConfigService) {}
+  constructor(
+    private readonly configService: ConfigService,
+    @InjectRepository(WayforpayEntity)
+    private readonly wayforpayRepository: Repository<WayforpayEntity>,
+  ) {}
   async sendPaymentRequest(data: any): Promise<any> {
     const url = this.configService.get('WAYFORPAY_PAYMENT_URL');
     const responseData = {
@@ -99,5 +113,40 @@ export class WayforpayService {
     )
       .update(signatureString, 'utf-8')
       .digest('hex');
+  }
+
+  async saveWayforpayUser(
+    data: SaveWayForPayDto,
+    req: CustomRequest,
+  ): Promise<string> {
+    const userId = await this.wayforpayRepository.findOneBy({
+      user_id: req.user.uuid,
+    });
+    if (userId) {
+      throw new ConflictException(
+        'Payment information already exists for this user.',
+      );
+    }
+    const dataForPayments = this.wayforpayRepository.create({
+      ...data,
+      user_id: req.user.uuid,
+    });
+    await this.wayforpayRepository.save(dataForPayments);
+    return 'Save data for WayForPay';
+  }
+
+  async deleteInfoPay(userId: string, currentUserId: string): Promise<void> {
+    const infoPay = await this.wayforpayRepository.findOneBy({
+      user_id: userId,
+    });
+    if (!infoPay) {
+      throw new NotFoundException(`User with ID ${userId} not found info pay`);
+    }
+    if (currentUserId !== infoPay.user_id) {
+      throw new ForbiddenException(
+        'You do not have permission to access this post.',
+      );
+    }
+    await this.wayforpayRepository.delete({ user_id: userId });
   }
 }
