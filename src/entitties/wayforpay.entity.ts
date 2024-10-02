@@ -7,7 +7,10 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { UserEntity } from './user.entity';
-import * as bcrypt from 'bcrypt';
+import * as crypto from 'node:crypto';
+import { config } from 'dotenv';
+
+config();
 
 @Entity('wayforpay')
 export class WayforpayEntity {
@@ -28,13 +31,32 @@ export class WayforpayEntity {
   user: UserEntity;
 
   @BeforeInsert()
-  async hashSecret() {
-    if (this.merchantSecret != null) {
-      this.merchantSecret = await bcrypt.hash(this.merchantSecret, 10);
-    }
+  encrypt() {
+    const iv = crypto.randomBytes(16);
+    const cipher = crypto.createCipheriv(
+      'aes-256-cbc',
+      Buffer.from(process.env.ENCRYPT_KEY),
+      iv,
+    );
+    let encrypted = cipher.update(this.merchantSecret, 'utf8', 'hex');
+    encrypted += cipher.final('hex');
+
+    this.merchantSecret = iv.toString('hex') + ':' + encrypted;
   }
 
-  async compareSecret(merchantSecret: string): Promise<boolean> {
-    return await bcrypt.compare(merchantSecret, this.merchantSecret);
+  decrypt(encryptedText: string) {
+    const textParts = encryptedText.split(':');
+    const iv = Buffer.from(textParts.shift(), 'hex');
+    const encryptedTextBuffer = Buffer.from(textParts.join(':'), 'hex');
+
+    const decipher = crypto.createDecipheriv(
+      'aes-256-cbc',
+      Buffer.from(process.env.ENCRYPT_KEY),
+      iv,
+    );
+    let decrypted = decipher.update(encryptedTextBuffer, null, 'utf8');
+    decrypted += decipher.final('utf8');
+
+    return decrypted;
   }
 }

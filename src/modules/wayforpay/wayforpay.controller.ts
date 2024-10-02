@@ -2,12 +2,13 @@ import {
   Body,
   Controller,
   Delete,
-  HttpStatus,
   Param,
+  HttpStatus,
   Post,
   Req,
   Res,
   UseGuards,
+  HttpException,
 } from '@nestjs/common';
 import { WayforpayService } from './wayforpay.service';
 import { Response } from 'express';
@@ -23,17 +24,23 @@ export class WayforpayController {
     private readonly configService: ConfigService,
   ) {}
 
+  @UseGuards(JwtAuthGuard)
   @Post()
   async sendPaymentRequest(
+    @Req() req: CustomRequest,
     @Res() res: Response,
     @Body() data: any,
   ): Promise<void | string> {
     try {
+      await this.wayforpayService.checkInfoPayAndCreate(req.user.uuid);
       const response = await this.wayforpayService.sendPaymentRequest(data);
       const URL = response.request.res.responseUrl;
       res.status(HttpStatus.OK).json({ redirectURL: URL });
     } catch (error) {
-      throw new Error('Failed to send payment request');
+      throw new HttpException(
+        'Failed to send payment request',
+        HttpStatus.BAD_REQUEST,
+      );
     }
   }
 

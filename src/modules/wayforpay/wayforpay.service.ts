@@ -16,6 +16,8 @@ import { CustomRequest } from '../auth/strategies/jwt.strategy';
 
 @Injectable()
 export class WayforpayService {
+  merchantAccount: any;
+  merchantSecret: any;
   orderReference: any;
   orderDate: any;
   language = 'AUTO';
@@ -30,7 +32,7 @@ export class WayforpayService {
   async sendPaymentRequest(data: any): Promise<any> {
     const url = this.configService.get('WAYFORPAY_PAYMENT_URL');
     const responseData = {
-      merchantAccount: this.configService.get('WAYFORPAY_MERCHANT_ACCOUNT'),
+      merchantAccount: this.merchantAccount,
       merchantDomainName: this.configService.get(
         'WAYFORPAY_MERCHANT_DOMAIN_NAME',
       ),
@@ -52,6 +54,9 @@ export class WayforpayService {
         'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
       },
     };
+
+    this.merchantAccount = null;
+    this.merchantSecret = null;
 
     try {
       return await axios.post(url, responseData, config);
@@ -82,7 +87,7 @@ export class WayforpayService {
 
   generateOrderSignature(data: any): string {
     const fieldsForSignature = {
-      merchantAccount: this.configService.get('WAYFORPAY_MERCHANT_ACCOUNT'),
+      merchantAccount: this.merchantAccount,
       merchantDomainName: this.configService.get(
         'WAYFORPAY_MERCHANT_DOMAIN_NAME',
       ),
@@ -107,10 +112,7 @@ export class WayforpayService {
     this.orderReference = null;
     this.orderDate = null;
 
-    return createHmac(
-      'md5',
-      this.configService.get('WAYFORPAY_MERCHANT_SECRET'),
-    )
+    return createHmac('md5', this.merchantSecret)
       .update(signatureString, 'utf-8')
       .digest('hex');
   }
@@ -148,5 +150,21 @@ export class WayforpayService {
       );
     }
     await this.wayforpayRepository.delete({ user_id: userId });
+  }
+
+  async checkInfoPayAndCreate(userId: string): Promise<void> {
+    const infoPay = await this.wayforpayRepository.findOneBy({
+      user_id: userId,
+    });
+    if (!infoPay) {
+      throw new NotFoundException(`User with ID ${userId} not found info pay`);
+    }
+
+    const existingPay = infoPay.decrypt(infoPay.merchantSecret);
+    if (!existingPay) {
+      throw new ForbiddenException(`User with ID ${userId} not found info pay`);
+    }
+    this.merchantAccount = infoPay.merchantAccount;
+    this.merchantSecret = existingPay;
   }
 }
