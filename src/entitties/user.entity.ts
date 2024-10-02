@@ -54,7 +54,7 @@ export class UserEntity {
   payInfo: WayforpayEntity;
 
   @BeforeInsert()
-  async hashPassword() {
+  async hashPassword(): Promise<void> {
     if (this.password != null) {
       this.password = await bcrypt.hash(this.password, 10);
     }

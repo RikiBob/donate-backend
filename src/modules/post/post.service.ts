@@ -7,7 +7,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { PostEntity } from '../../entitties/post.entity';
 import { Repository } from 'typeorm';
 import { CreatePostDto } from './dtos/create-post.dto';
-import { CustomRequest } from '../auth/strategies/jwt.strategy';
+import { RequestWithUser } from '../auth/strategies/jwt.strategy';
 
 @Injectable()
 export class PostService {
@@ -16,7 +16,10 @@ export class PostService {
     private readonly postsRepository: Repository<PostEntity>,
   ) {}
 
-  async createPost(data: CreatePostDto, req: CustomRequest) {
+  async createPost(
+    data: CreatePostDto,
+    req: RequestWithUser,
+  ): Promise<PostEntity> {
     const post = this.postsRepository.create({
       ...data,
       user_id: req.user.uuid,

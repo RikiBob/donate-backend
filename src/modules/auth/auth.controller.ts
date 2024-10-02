@@ -12,8 +12,7 @@ import { AuthService } from './auth.service';
 import { Response } from 'express';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { LoginUserDto } from './dtos/login-user.dto';
-import { LocalAuthGuard } from './guards/local.auth.guard';
-import { GoogleAuthGuard } from './guards/google.auth';
+import { GoogleAuthGuard } from '../../guards/google.auth';
 import { ConfigService } from '@nestjs/config';
 
 @Controller('auth')
@@ -56,7 +55,6 @@ export class AuthController {
     return res.send(newUserId);
   }
 
-  @UseGuards(LocalAuthGuard)
   @Post('login')
   async login(
     @Body() data: LoginUserDto,
@@ -81,12 +79,13 @@ export class AuthController {
 
     return res.send(user.uuid);
   }
+
   @Post('logout')
-  async logout(@Res() res: Response) {
+  async logout(@Res() res: Response): Promise<Response> {
     await this.authService.logout();
     res.clearCookie('access_token');
     res.clearCookie('refresh_token');
-    res.sendStatus(HttpStatus.OK);
+    return res.sendStatus(HttpStatus.OK);
   }
 
   @UseGuards(GoogleAuthGuard)
@@ -95,7 +94,7 @@ export class AuthController {
 
   @UseGuards(GoogleAuthGuard)
   @Get('google/redirect')
-  async googleRedirect(@Req() req, @Res() res: Response) {
+  async googleRedirect(@Req() req, @Res() res: Response): Promise<Response | any> {
     const user = await this.authService.checkByEmail(req.user.email);
     if (!user) {
       this.currentUser = req.user;

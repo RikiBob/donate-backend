@@ -12,7 +12,7 @@ import { SaveWayForPayDto } from './dtos/save-wayforpay.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { WayforpayEntity } from '../../entitties/wayforpay.entity';
 import { Repository } from 'typeorm';
-import { CustomRequest } from '../auth/strategies/jwt.strategy';
+import { RequestWithUser } from '../auth/strategies/jwt.strategy';
 
 @Injectable()
 export class WayforpayService {
@@ -119,7 +119,7 @@ export class WayforpayService {
 
   async saveWayforpayUser(
     data: SaveWayForPayDto,
-    req: CustomRequest,
+    req: RequestWithUser,
   ): Promise<string> {
     const userId = await this.wayforpayRepository.findOneBy({
       user_id: req.user.uuid,

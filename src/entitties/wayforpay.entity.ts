@@ -31,7 +31,7 @@ export class WayforpayEntity {
   user: UserEntity;
 
   @BeforeInsert()
-  encrypt() {
+  encrypt(): void {
     const iv = crypto.randomBytes(16);
     const cipher = crypto.createCipheriv(
       'aes-256-cbc',
@@ -44,7 +44,7 @@ export class WayforpayEntity {
     this.merchantSecret = iv.toString('hex') + ':' + encrypted;
   }
 
-  decrypt(encryptedText: string) {
+  decrypt(encryptedText: string): string {
     const textParts = encryptedText.split(':');
     const iv = Buffer.from(textParts.shift(), 'hex');
     const encryptedTextBuffer = Buffer.from(textParts.join(':'), 'hex');

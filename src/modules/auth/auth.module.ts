@@ -7,7 +7,6 @@ import { JwtService } from '@nestjs/jwt';
 import { CacheModule } from '@nestjs/cache-manager';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import * as redisStore from 'cache-manager-ioredis';
-import { LocalStrategy } from './strategies/local.strategy';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { GoogleStrategy } from './strategies/google.strategy';
 import { PostEntity } from '../../entitties/post.entity';
@@ -28,13 +27,7 @@ import { PostEntity } from '../../entitties/post.entity';
     }),
   ],
   controllers: [AuthController],
-  providers: [
-    AuthService,
-    JwtService,
-    LocalStrategy,
-    JwtStrategy,
-    GoogleStrategy,
-  ],
+  providers: [AuthService, JwtService, JwtStrategy, GoogleStrategy],
   exports: [AuthService],
 })
 export class AuthModule {}

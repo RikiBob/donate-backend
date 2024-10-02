@@ -1,4 +1,7 @@
 import { DataSource } from 'typeorm';
+import { config } from 'dotenv';
+
+config();
 
 const AppDataSource = new DataSource({
   type: 'postgres',
@@ -7,8 +10,8 @@ const AppDataSource = new DataSource({
   username: 'postgres',
   password: 'postgres',
   database: 'donate',
-  entities: ['dist/**/*.entity.js'],
-  migrations: ['dist/migrations/*.js'],
+  entities: [process.env.TYPEORM_ENTITIES],
+  migrations: [process.env.TYPEORM_MIGRATIONS],
 });
 
 export default AppDataSource;

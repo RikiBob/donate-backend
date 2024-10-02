@@ -95,7 +95,7 @@ export class AuthService {
     return existingUser;
   }
 
-  async logout() {
+  async logout(): Promise<void> {
     await this.cacheManager.del('refresh_token');
   }
 

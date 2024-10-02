@@ -12,7 +12,7 @@ export class UserService {
     private usersRepository: Repository<UserEntity>,
   ) {}
 
-  async findAll() {
+  async findAll(): Promise<UserEntity[]> {
     return await this.usersRepository.find();
   }
 

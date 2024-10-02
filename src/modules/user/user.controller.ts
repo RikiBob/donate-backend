@@ -11,22 +11,23 @@ import {
 import { UserService } from './user.service';
 import { UserProfileDto } from './dtos/user-profile.dto';
 import { UpdateUserDto } from './dtos/update-user.dto';
-import { JwtAuthGuard } from '../auth/guards/jwt.auth.guard';
-import { CustomRequest, ReqUser } from '../auth/strategies/jwt.strategy';
+import { JwtAuthGuard } from '../../guards/jwt.auth.guard';
+import { RequestWithUser, ReqUser } from '../auth/strategies/jwt.strategy';
+import { UserEntity } from '../../entitties/user.entity';
 
 @Controller('user')
 export class UserController {
   constructor(private readonly usersService: UserService) {}
 
   @Get('all')
-  async findAll() {
+  async findAll(): Promise<UserEntity[]> {
     return await this.usersService.findAll();
   }
 
   @UseGuards(JwtAuthGuard)
   @Get('profile')
   async getById(
-    @Req() req: CustomRequest,
+    @Req() req: RequestWithUser,
     @Query('uuid') uuid?: string,
   ): Promise<UserProfileDto> {
     const userId = uuid ? uuid : (req.user as ReqUser).uuid;

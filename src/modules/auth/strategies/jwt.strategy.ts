@@ -14,7 +14,7 @@ export type ReqUser = {
   uuid: string;
 };
 
-export interface CustomRequest extends Request {
+export interface RequestWithUser extends Request {
   user?: ReqUser;
 }
 

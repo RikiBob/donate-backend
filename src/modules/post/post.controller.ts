@@ -11,8 +11,8 @@ import {
 } from '@nestjs/common';
 import { PostService } from './post.service';
 import { CreatePostDto } from './dtos/create-post.dto';
-import { CustomRequest } from '../auth/strategies/jwt.strategy';
-import { JwtAuthGuard } from '../auth/guards/jwt.auth.guard';
+import { RequestWithUser } from '../auth/strategies/jwt.strategy';
+import { JwtAuthGuard } from '../../guards/jwt.auth.guard';
 import { PostEntity } from '../../entitties/post.entity';
 
 @Controller('post')
@@ -23,7 +23,7 @@ export class PostController {
   @Post('create')
   async createPost(
     @Body() data: CreatePostDto,
-    @Req() req: CustomRequest,
+    @Req() req: RequestWithUser,
   ): Promise<PostEntity> {
     return await this.postService.createPost(data, req);
   }
@@ -53,7 +53,7 @@ export class PostController {
   @Delete(':id')
   async deletePost(
     @Param('id') id: string,
-    @Req() req: CustomRequest,
+    @Req() req: RequestWithUser,
   ): Promise<void> {
     await this.postService.deletePost(id, req.user.uuid);
   }
