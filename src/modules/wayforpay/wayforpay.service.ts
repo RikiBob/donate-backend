@@ -146,7 +146,7 @@ export class WayforpayService {
     }
     if (currentUserId !== infoPay.user_id) {
       throw new ForbiddenException(
-        'You do not have permission to access this post.',
+        'You do not have permission to access info pay.',
       );
     }
     await this.wayforpayRepository.delete({ user_id: userId });
@@ -156,6 +156,7 @@ export class WayforpayService {
     const infoPay = await this.wayforpayRepository.findOneBy({
       user_id: userId,
     });
+
     if (!infoPay) {
       throw new NotFoundException(`User with ID ${userId} not found info pay`);
     }
@@ -166,5 +167,53 @@ export class WayforpayService {
     }
     this.merchantAccount = infoPay.merchantAccount;
     this.merchantSecret = existingPay;
+  }
+
+  generateTransactionSignature(data: any): string {
+    const fieldsForSignature = {
+      merchantAccount: this.merchantAccount,
+      dateBegin: data.dateBegin,
+      dateEnd: data.dateEnd,
+    };
+
+    const signatureString = Object.values(fieldsForSignature)
+      .map((value) => {
+        if (Array.isArray(value)) {
+          return value.join(';');
+        }
+        return value;
+      })
+      .join(';');
+
+    return createHmac('md5', this.merchantSecret)
+      .update(signatureString, 'utf-8')
+      .digest('hex');
+  }
+
+  async transactionList(data: any): Promise<any> {
+    const url = this.configService.get('WAYFORPAY_TRANSACTION_LIST_URL');
+    const responseData = {
+      apiVersion: 1,
+      transactionType: "TRANSACTION_LIST",
+      merchantAccount: this.merchantAccount,
+      merchantSignature: this.generateTransactionSignature(data),
+      dateBegin: data.dateBegin,
+      dateEnd: data.dateEnd,
+    }
+
+    const config = {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+      },
+    };
+
+    this.merchantAccount = null;
+    this.merchantSecret = null;
+    try {
+      return await axios.post(url, responseData, config);
+    } catch (error) {
+
+      throw new Error('Failed to send transaction list request.');
+    }
   }
 }

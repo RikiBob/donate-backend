@@ -7,6 +7,8 @@ import { PostModule } from './modules/post/post.module';
 import { join } from 'path';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { WayforpayModule } from './modules/wayforpay/wayforpay.module';
+import { MyLoggerService } from './my-logger/my-logger.service';
+import { MyLoggerModule } from './my-logger/my-logger.module';
 
 @Module({
   imports: [
@@ -36,8 +38,9 @@ import { WayforpayModule } from './modules/wayforpay/wayforpay.module';
     }),
     PostModule,
     WayforpayModule,
+    MyLoggerModule,
   ],
   controllers: [],
-  providers: [],
+  providers: [MyLoggerService],
 })
 export class AppModule {}

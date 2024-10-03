@@ -70,7 +70,29 @@ export class WayforpayController {
   async deleteInfoPay(
     @Param('user_id') userId: string,
     @Req() req: RequestWithUser,
-  ): Promise<void> {
+    @Res() res: Response
+  ): Promise<Response> {
     await this.wayforpayService.deleteInfoPay(userId, req.user.uuid);
+    return res.sendStatus(HttpStatus.OK);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('/transactions')
+  async transactionList(
+    @Req() req: RequestWithUser,
+    @Res() res: Response,
+    @Body() data: any,
+  ): Promise<void | string> {
+    try {
+      await this.wayforpayService.checkInfoPayAndCreate(req.user.uuid);
+      const response = await this.wayforpayService.transactionList(data);
+      const URL = response.request.res.responseUrl;
+      res.status(HttpStatus.OK).json({ redirectURL: URL });
+    } catch (error) {
+      throw new HttpException(
+        'Failed to send payment request',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
   }
 }
