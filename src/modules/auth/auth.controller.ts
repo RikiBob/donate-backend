@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   HttpStatus,
+  Inject,
   Post,
   Req,
   Res,
@@ -14,12 +15,16 @@ import { CreateUserDto } from './dtos/create-user.dto';
 import { LoginUserDto } from './dtos/login-user.dto';
 import { GoogleAuthGuard } from '../../guards/google.auth';
 import { ConfigService } from '@nestjs/config';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Cache } from 'cache-manager';
 
 @Controller('auth')
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly configService: ConfigService,
+    @Inject(CACHE_MANAGER)
+    private readonly cacheManager: Cache,
   ) {}
 
   currentUser = null;
@@ -30,7 +35,7 @@ export class AuthController {
     @Res() res: Response,
   ): Promise<Response> {
     const newUserId = await this.authService.checkAndCreateForUser({
-      ...(this.currentUser || {}),
+      ...((await this.cacheManager.get('current-user')) || {}),
       ...data,
     });
 
@@ -50,7 +55,7 @@ export class AuthController {
       secure: false,
     });
 
-    this.currentUser = null;
+    await this.cacheManager.del('current-user');
 
     return res.send(newUserId);
   }
@@ -94,10 +99,13 @@ export class AuthController {
 
   @UseGuards(GoogleAuthGuard)
   @Get('google/redirect')
-  async googleRedirect(@Req() req, @Res() res: Response): Promise<Response | any> {
+  async googleRedirect(
+    @Req() req,
+    @Res() res: Response,
+  ): Promise<Response | any> {
     const user = await this.authService.checkByEmail(req.user.email);
     if (!user) {
-      this.currentUser = req.user;
+      await this.cacheManager.set('current-user', req.user);
       return res.redirect(this.configService.get('REDIRECT_URL'));
     }
 
