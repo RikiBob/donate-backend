@@ -7,11 +7,42 @@ import { PostModule } from './modules/post/post.module';
 import { join } from 'path';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { WayforpayModule } from './modules/wayforpay/wayforpay.module';
-import { MyLoggerService } from './my-logger/my-logger.service';
-import { MyLoggerModule } from './my-logger/my-logger.module';
+import { LoggerModule } from 'nestjs-pino';
+import { v4 as uuidv4 } from 'uuid';
+import { createWriteStream } from 'pino-stackdriver';
 
 @Module({
   imports: [
+    LoggerModule.forRootAsync({
+      useFactory: (configService: ConfigService) => {
+        const logName = `${configService.get('GCP_LOG_NAME')}-${configService.get('APP_ENVIRONMENT')}`;
+
+        const writeStream = createWriteStream({
+          credentials: {
+            client_email: configService.get('GCP_LOGGING_EMAIL'),
+            private_key: configService.get('GCP_LOGGING_PRIVATE_KEY').replace(/\\n/g, '\n'),
+          },
+          projectId: configService.get('GCP_PROJECT_ID'),
+          logName: logName,
+          resource: {
+            type: 'global',
+          },
+        });
+
+        return {
+          pinoHttp: {
+            name: logName,
+            stream: writeStream,
+            redact: ['req.headers.authorization'],
+            customProps: (req, res) => ({
+              context: 'HTTP',
+            }),
+            genReqId: () => uuidv4(),
+          },
+        };
+      },
+      inject: [ConfigService],
+    }),
     AuthModule,
     UserModule,
     ServeStaticModule.forRoot({
@@ -38,9 +69,8 @@ import { MyLoggerModule } from './my-logger/my-logger.module';
     }),
     PostModule,
     WayforpayModule,
-    MyLoggerModule,
   ],
   controllers: [],
-  providers: [MyLoggerService],
+  providers: [],
 })
 export class AppModule {}
