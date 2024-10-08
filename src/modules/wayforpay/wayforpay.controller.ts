@@ -70,7 +70,7 @@ export class WayforpayController {
   async deleteInfoPay(
     @Param('user_id') userId: string,
     @Req() req: RequestWithUser,
-    @Res() res: Response
+    @Res() res: Response,
   ): Promise<Response> {
     await this.wayforpayService.deleteInfoPay(userId, req.user.uuid);
     return res.sendStatus(HttpStatus.OK);

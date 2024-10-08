@@ -2,6 +2,7 @@ import {
   ConflictException,
   ForbiddenException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -16,6 +17,7 @@ import { RequestWithUser } from '../auth/strategies/jwt.strategy';
 
 @Injectable()
 export class WayforpayService {
+  private readonly logger = new Logger(WayforpayService.name);
   merchantAccount: any;
   merchantSecret: any;
   orderReference: any;
@@ -58,9 +60,11 @@ export class WayforpayService {
     this.merchantAccount = null;
     this.merchantSecret = null;
 
+    this.logger.log('Request for payment formation');
     try {
       return await axios.post(url, responseData, config);
     } catch (error) {
+      this.logger.error('Failed to send payment request.');
       throw new Error('Failed to send payment request.');
     }
   }
@@ -125,6 +129,7 @@ export class WayforpayService {
       user_id: req.user.uuid,
     });
     if (userId) {
+      this.logger.error('Payment information already exists for this user');
       throw new ConflictException(
         'Payment information already exists for this user.',
       );
@@ -134,6 +139,7 @@ export class WayforpayService {
       user_id: req.user.uuid,
     });
     await this.wayforpayRepository.save(dataForPayments);
+    this.logger.log('Save data for WayForPay');
     return 'Save data for WayForPay';
   }
 
@@ -142,14 +148,17 @@ export class WayforpayService {
       user_id: userId,
     });
     if (!infoPay) {
+      this.logger.error(`User with ID ${userId} not found info pay`);
       throw new NotFoundException(`User with ID ${userId} not found info pay`);
     }
     if (currentUserId !== infoPay.user_id) {
+      this.logger.error('You do not have permission to access info pay.');
       throw new ForbiddenException(
         'You do not have permission to access info pay.',
       );
     }
     await this.wayforpayRepository.delete({ user_id: userId });
+    this.logger.log('User is deleted successfully.');
   }
 
   async checkInfoPayAndCreate(userId: string): Promise<void> {
@@ -158,13 +167,16 @@ export class WayforpayService {
     });
 
     if (!infoPay) {
+      this.logger.error(`User with ID ${userId} not found info pay`);
       throw new NotFoundException(`User with ID ${userId} not found info pay`);
     }
 
     const existingPay = infoPay.decrypt(infoPay.merchantSecret);
     if (!existingPay) {
+      this.logger.error(`User with ID ${userId} not found info pay`);
       throw new ForbiddenException(`User with ID ${userId} not found info pay`);
     }
+
     this.merchantAccount = infoPay.merchantAccount;
     this.merchantSecret = existingPay;
   }
@@ -194,25 +206,28 @@ export class WayforpayService {
     const url = this.configService.get('WAYFORPAY_TRANSACTION_LIST_URL');
     const responseData = {
       apiVersion: 1,
-      transactionType: "TRANSACTION_LIST",
+      transactionType: 'TRANSACTION_LIST',
       merchantAccount: this.merchantAccount,
       merchantSignature: this.generateTransactionSignature(data),
       dateBegin: data.dateBegin,
       dateEnd: data.dateEnd,
-    }
+    };
 
     const config = {
       headers: {
-        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+        'Content-Type': 'application/json', // Налаштовуємо заголовок для JSON
       },
     };
 
     this.merchantAccount = null;
     this.merchantSecret = null;
-    try {
-      return await axios.post(url, responseData, config);
-    } catch (error) {
 
+    try {
+      this.logger.log('Request list of transactions');
+      return await axios.post(url, JSON.stringify(responseData), config);
+    } catch (error) {
+      console.log(error);
+      this.logger.error('Failed to send transaction list request.');
       throw new Error('Failed to send transaction list request.');
     }
   }

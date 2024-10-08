@@ -20,7 +20,9 @@ import { createWriteStream } from 'pino-stackdriver';
         const writeStream = createWriteStream({
           credentials: {
             client_email: configService.get('GCP_LOGGING_EMAIL'),
-            private_key: configService.get('GCP_LOGGING_PRIVATE_KEY').replace(/\\n/g, '\n'),
+            private_key: configService
+              .get('GCP_LOGGING_PRIVATE_KEY')
+              .replace(/\\n/g, '\n'),
           },
           projectId: configService.get('GCP_PROJECT_ID'),
           logName: logName,
@@ -34,7 +36,7 @@ import { createWriteStream } from 'pino-stackdriver';
             name: logName,
             stream: writeStream,
             redact: ['req.headers.authorization'],
-            customProps: (req, res) => ({
+            customProps: () => ({
               context: 'HTTP',
             }),
             genReqId: () => uuidv4(),
