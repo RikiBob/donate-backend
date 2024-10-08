@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   ForbiddenException,
   Injectable,
@@ -60,12 +61,12 @@ export class WayforpayService {
     this.merchantAccount = null;
     this.merchantSecret = null;
 
-    this.logger.log('Request for payment formation');
     try {
+      this.logger.log('Request for payment formation');
       return await axios.post(url, responseData, config);
     } catch (error) {
       this.logger.error('Failed to send payment request.');
-      throw new Error('Failed to send payment request.');
+      throw new BadRequestException('Failed to send payment request.');
     }
   }
 
@@ -203,6 +204,7 @@ export class WayforpayService {
   }
 
   async transactionList(data: any): Promise<any> {
+    this.checkDateValidate(data);
     const url = this.configService.get('WAYFORPAY_TRANSACTION_LIST_URL');
     const responseData = {
       apiVersion: 1,
@@ -224,11 +226,23 @@ export class WayforpayService {
 
     try {
       this.logger.log('Request list of transactions');
-      return await axios.post(url, JSON.stringify(responseData), config);
+      return await axios
+        .post(url, JSON.stringify(responseData), config)
+        .then((response) => {
+          return response.data.transactionList;
+        });
     } catch (error) {
-      console.log(error);
       this.logger.error('Failed to send transaction list request.');
-      throw new Error('Failed to send transaction list request.');
+      throw new BadRequestException('Failed to send transaction list request.');
+    }
+  }
+
+  private checkDateValidate(data): void {
+    const oneDayInMs = 24 * 60 * 60 * 1000;
+    const differenceInMs = (data.dateEnd - data.dateBegin) / oneDayInMs;
+    if (differenceInMs > 31) {
+      this.logger.error('Dates exceed 31 days');
+      throw new BadRequestException('Dates exceed 31 days');
     }
   }
 }

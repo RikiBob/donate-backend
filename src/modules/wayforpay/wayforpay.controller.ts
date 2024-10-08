@@ -82,13 +82,13 @@ export class WayforpayController {
     @Req() req: RequestWithUser,
     @Res() res: Response,
     @Body() data: any,
-  ): Promise<void | string> {
+  ): Promise<Response | string> {
     try {
       await this.wayforpayService.checkInfoPayAndCreate(req.user.uuid);
-      const response = await this.wayforpayService.transactionList(data);
-      const URL = response.request.res.responseUrl;
-      res.status(HttpStatus.OK).json({ redirectURL: URL });
+      const transactionList = await this.wayforpayService.transactionList(data);
+      return res.send(transactionList);
     } catch (error) {
+      console.log(error.message);
       throw new HttpException(
         'Failed to send payment request',
         HttpStatus.BAD_REQUEST,
