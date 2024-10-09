@@ -7,6 +7,7 @@ import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { JwtPayload } from './strategies/jwt.strategy';
+import { LoginUserDto } from './dtos/login-user.dto';
 
 @Injectable()
 export class AuthService {
@@ -26,9 +27,6 @@ export class AuthService {
     let user = await this.usersRepository.findOneBy({ email: data.email });
     if (user) {
       throw new BadRequestException('This email is already in use');
-    }
-
-    if (user) {
     } else {
       user = this.usersRepository.create({
         ...data,
@@ -39,7 +37,7 @@ export class AuthService {
     }
   }
 
-  async generateJwt(
+  private async generateJwt(
     payload: JwtPayload,
   ): Promise<{ accessToken: string; refreshToken: string }> {
     const tokenPair = {
@@ -63,10 +61,10 @@ export class AuthService {
   }
 
   async signIn(
-    user: any,
+    user: LoginUserDto,
   ): Promise<{ accessToken: string; refreshToken: string }> {
     const userExists = await this.checkByEmail(user.email);
-    if (!user || !userExists) {
+    if (!userExists) {
       throw new BadRequestException('Unauthenticated');
     }
 
