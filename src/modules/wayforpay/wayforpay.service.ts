@@ -19,8 +19,8 @@ import { RequestWithUser } from '../auth/strategies/jwt.strategy';
 @Injectable()
 export class WayforpayService {
   private readonly logger = new Logger(WayforpayService.name);
-  merchantAccount: any;
-  merchantSecret: any;
+  merchantAccount = 'account';
+  merchantSecret = 'key';
   orderReference: any;
   orderDate: any;
   language = 'AUTO';
