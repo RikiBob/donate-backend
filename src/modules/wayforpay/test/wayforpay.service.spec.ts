@@ -14,7 +14,6 @@ import {
 
 describe('WayforpayService', () => {
   let service: WayforpayService;
-  // let configService: ConfigService;
 
   const mockRepository = {
     find: jest.fn(),
@@ -39,7 +38,6 @@ describe('WayforpayService', () => {
     }).compile();
 
     service = module.get<WayforpayService>(WayforpayService);
-    // configService = module.get<ConfigService>(ConfigService);
   });
 
   it('should be defined', () => {
