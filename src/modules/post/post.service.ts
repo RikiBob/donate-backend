@@ -52,8 +52,11 @@ export class PostService {
   }
 
   async deletePost(postId: string, currentUserId: string): Promise<void> {
-    const parseId = Number(postId.replace(/^:/, ''));
-    const userByPost = await this.postsRepository.findOneBy({ id: parseId });
+    const userByPost = await this.postsRepository.findOneBy({ id: +postId });
+
+    if (!userByPost) {
+      throw new NotFoundException('Post not found');
+    }
 
     if (currentUserId !== userByPost.user_id) {
       throw new ForbiddenException(
@@ -61,6 +64,6 @@ export class PostService {
       );
     }
 
-    await this.postsRepository.delete({ id: parseId });
+    await this.postsRepository.delete({ id: +postId });
   }
 }
